@@ -29,17 +29,23 @@ def _get_thumbs(data):
         # get ID from YouTube URL
         youtube_id_regex = re.compile("(?:(?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]+)")
         video_id = youtube_id_regex.findall(data)
-        video_id = ''.join(''.join(elements) for elements in video_id).replace("?", "").replace("&", "")
-        # get URL of thumbnail
-        video_thumb = "https://img.youtube.com/vi/" + video_id + "/0.jpg"
+        if len(video_id) > 0:
+            video_id = ''.join(''.join(elements) for elements in video_id).replace("?", "").replace("&", "")
+            # get URL of thumbnail
+            video_thumb = "https://img.youtube.com/vi/" + video_id + "/0.jpg"
+        else:
+            video_thumb = ""
     elif "vimeo" in data:
         # get ID from Vimeo URL
-        vimeo_id_regex = re.compile("(?:/video/)(\d+)")
+        vimeo_id_regex = re.compile("(?:/vimeo.com/)(\d+)")
         vimeo_id = vimeo_id_regex.findall(data)[0]
-        # make an API call to get thumbnail URL
-        with urllib.request.urlopen("https://vimeo.com/api/v2/video/" + vimeo_id + ".json") as url:
-            data = json.loads(url.read().decode())
+        # make an API call to get thumbnail URL using urllib3
+        url = urllib.PoolManager().request("GET", "https://vimeo.com/api/v2/video/" + vimeo_id + ".json")
+        data = json.loads(url.data.decode('utf-8'))
+        if url.status == 200 and data:
             video_thumb = data[0]['thumbnail_large']
+        else:
+            video_thumb = ""
     else:
         # the thumbs parameter is True, but the APOD for the date is not a video, output nothing
         video_thumb = ""
