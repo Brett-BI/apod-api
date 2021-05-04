@@ -14,3 +14,6 @@ def test_get_thumbs():
 
     data_vimeo = "https://vimeo.com/542174820"
     assert utility._get_thumbs(data_vimeo) == "https://i.vimeocdn.com/video/1124434005_640.jpg"
+
+    data_vimeo = "https://vimeo.com/video/542174820"
+    assert utility._get_thumbs(data_vimeo) == "https://i.vimeocdn.com/video/1124434005_640.jpg"
