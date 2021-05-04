@@ -36,16 +36,22 @@ def _get_thumbs(data):
         else:
             video_thumb = ""
     elif "vimeo" in data:
-        # get ID from Vimeo URL
-        vimeo_id_regex = re.compile("(?:/vimeo.com/)(\d+)")
-        vimeo_id = vimeo_id_regex.findall(data)[0]
-        # make an API call to get thumbnail URL using urllib3
-        url = urllib.PoolManager().request("GET", "https://vimeo.com/api/v2/video/" + vimeo_id + ".json")
-        data = json.loads(url.data.decode('utf-8'))
-        if url.status == 200 and data:
-            video_thumb = data[0]['thumbnail_large']
-        else:
-            video_thumb = ""
+        # get ID from Vimeo URL using old and new URL patterns
+        video_thumb = ""
+        vimeo_regex_strings = ["(?:vimeo.com/)(\d+)", "(?:/video/)(\d+)"]
+        print(len(vimeo_regex_strings))
+        for regex_string in vimeo_regex_strings:
+            if regex_string:
+                vimeo_id_regex = re.compile(regex_string)
+                print(f'vimeo_id_regex: {vimeo_id_regex}')
+                if vimeo_id_regex.findall(data)[0]:
+                    vimeo_id = vimeo_id_regex.findall(data)[0]
+                    if len(vimeo_id) > 0:
+                        # make an API call to get thumbnail URL using urllib3
+                        url = urllib.PoolManager().request("GET", "https://vimeo.com/api/v2/video/" + vimeo_id + ".json")
+                        data = json.loads(url.data.decode('utf-8'))
+                        if url.status == 200 and data:
+                            video_thumb = data[0]['thumbnail_large']
     else:
         # the thumbs parameter is True, but the APOD for the date is not a video, output nothing
         video_thumb = ""
